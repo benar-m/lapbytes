@@ -37,24 +37,23 @@ type Laptop struct {
 	Created_at  time.Time
 	Updated_at  time.Time
 }
-
 type User struct {
-	Id            uuid.UUID
-	Username      string
-	Email         string
-	Password_hash string
-	Is_admin      bool
-	Access_level  string
-	Created_at    time.Time
-	Updated_at    time.Time
+	Id            int       `db:"id"`
+	Username      string    `db:"username"`
+	Email         string    `db:"email"`
+	Password_hash string    `db:"passwordhash"`
+	Is_admin      bool      `db:"isadmin"`
+	Access_level  int       `db:"accesslevel"` //There will be 5 levels of access with 0 being the highest (super user) and 4 the lowest
+	Created_at    time.Time `db:"createdat"`
+	Updated_at    time.Time `db:"updatedat"`
 }
 
 type Cart struct {
 }
 
 type LoginResponse struct {
-	AccessToken string `json:access_token`
-	TokenType   string `json:token_type`
+	AccessToken string `json:"access_token"`
+	TokenType   string `json:"token_type"`
 }
 
 type RefreshHttpOnlyCookie struct {

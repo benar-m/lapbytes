@@ -7,7 +7,13 @@ import (
 	"log"
 	"net/http"
 	"time"
+
+	"github.com/jackc/pgx/v5/pgxpool"
 )
+
+type App struct {
+	DB *pgxpool.Pool
+}
 
 /*- `GET /api/products` — List all laptops
 - `GET /api/products/{id}` — Get product details
@@ -30,21 +36,21 @@ import (
 
 */
 // Core Rendering
-func Home(w http.ResponseWriter, r *http.Request) {
+func (a *App) Home(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprint(w, "Hello Home Page")
 }
 
-func Register(w http.ResponseWriter, r *http.Request) {
+func (a *App) Register(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprint(w, "Hello Register Page")
 }
-func Login(w http.ResponseWriter, r *http.Request) {
+func (a *App) Login(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprint(w, "Hello Login Page")
 }
-func Products(w http.ResponseWriter, r *http.Request) {
+func (a *App) Products(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprint(w, "Hello Products Page")
 }
 
-func Product(w http.ResponseWriter, r *http.Request) {
+func (a *App) Product(w http.ResponseWriter, r *http.Request) {
 	prod_id := r.PathValue("id")
 	fmt.Fprintf(w, "Hello from Product id %+v", prod_id)
 }
@@ -55,7 +61,7 @@ func Product(w http.ResponseWriter, r *http.Request) {
 // 	//Verify Login Then Issue KEys
 // }
 
-func ApiLogin(w http.ResponseWriter, r *http.Request) {
+func (a *App) ApiLogin(w http.ResponseWriter, r *http.Request) {
 
 	// username:=r.FormValue("email")
 	// password:=r.FormValue("password")
