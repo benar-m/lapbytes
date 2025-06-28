@@ -1,0 +1,14 @@
+CREATE TABLE users (
+    id SERIAL PRIMARY KEY,
+    username VARCHAR(50) NOT NULL UNIQUE,
+    email VARCHAR(100) NOT NULL UNIQUE,
+    passwordhash VARCHAR(100) NOT NULL UNIQUE,
+    isadmin BOOLEAN NOT NULL DEFAULT TRUE,
+    accesslevel INTEGER NOT NULL DEFAULT 4,
+    createdat TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updatedat TIMESTAMP NOT NULL 
+);
+CREATE UNIQUE INDEX idx_users_email ON users(email);
+
+
+
