@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"lapbytes/internal/model"
+	"lapbytes/internal/store/queries"
 	"log"
 	"net/http"
 	"time"
@@ -36,21 +37,21 @@ type App struct {
 
 */
 // Core Rendering
-func (a *App) Home(w http.ResponseWriter, r *http.Request) {
+func (a *App) RenderHome(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprint(w, "Hello Home Page")
 }
 
-func (a *App) Register(w http.ResponseWriter, r *http.Request) {
+func (a *App) RenderRegister(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprint(w, "Hello Register Page")
 }
-func (a *App) Login(w http.ResponseWriter, r *http.Request) {
+func (a *App) RenderLogin(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprint(w, "Hello Login Page")
 }
-func (a *App) Products(w http.ResponseWriter, r *http.Request) {
+func (a *App) RenderProducts(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprint(w, "Hello Products Page")
 }
 
-func (a *App) Product(w http.ResponseWriter, r *http.Request) {
+func (a *App) RenderProduct(w http.ResponseWriter, r *http.Request) {
 	prod_id := r.PathValue("id")
 	fmt.Fprintf(w, "Hello from Product id %+v", prod_id)
 }
@@ -61,14 +62,28 @@ func (a *App) Product(w http.ResponseWriter, r *http.Request) {
 // 	//Verify Login Then Issue KEys
 // }
 
-func (a *App) ApiLogin(w http.ResponseWriter, r *http.Request) {
+// called at /api/..., it logs in a user by verifying credentials and issuing jwts
+func (a *App) LoginUser(w http.ResponseWriter, r *http.Request) {
+	//Logging later
 
-	// username:=r.FormValue("email")
-	// password:=r.FormValue("password")
+	email := r.FormValue("email")
+	password := r.FormValue("password")
+	passwordhash, err := queries.GetUserHash(a.DB, email)
+	if err != nil {
+		http.Error(w, "Invalid Credentials", http.StatusUnauthorized)
+		return
+	}
+	loggedIn := verifyPasswordHash(password, passwordhash)
+	if !loggedIn {
+		http.Error(w, "Invalid Credentials", http.StatusUnauthorized)
+		return
+	}
+
 	InitKeys()
 	accessToken, err := IssueKeys()
 	if err != nil {
 		http.Error(w, "Error Occured During Login", http.StatusInternalServerError)
+		return
 	}
 	response := model.LoginResponse{
 		AccessToken: accessToken,
@@ -79,6 +94,7 @@ func (a *App) ApiLogin(w http.ResponseWriter, r *http.Request) {
 	refreshToken, err := generateRandomString()
 	if err != nil {
 		http.Error(w, "Error Occured During Login", http.StatusInternalServerError)
+		return
 
 	}
 
@@ -97,4 +113,37 @@ func (a *App) ApiLogin(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		log.Printf("Error Writing Response Body %+v", err)
 	}
+}
+
+// Called at /api/..., this function creates a new user in the database
+func (a *App) RegisterUser(w http.ResponseWriter, r *http.Request) {
+	//later sanitize, middleware maybe
+	//refactor to more direct or keep it as defesive as it is
+	user := &model.User{}
+	username := r.FormValue("username")
+	email := r.FormValue("email")
+	password := r.FormValue("password")
+	password_hash, err := hashPassword(password)
+	if err != nil {
+		http.Error(w, "Error Occured During Registration", http.StatusInternalServerError)
+		return
+	}
+
+	current_time := time.Now()
+
+	user.Username = username
+	user.Email = email
+	user.Password_hash = password_hash
+	user.Is_admin = false
+	user.Access_level = 4
+	user.Created_at = current_time
+	user.Updated_at = current_time
+
+	userId, err := queries.InsertUser(a.DB, *user)
+	if err != nil {
+		http.Error(w, "Could not Create Account", http.StatusInternalServerError)
+		return
+	}
+	log.Print(userId)
+
 }

@@ -28,13 +28,14 @@ func main() {
 	app := &api.App{
 		DB: pool,
 	}
-	mux.HandleFunc("GET /{$}", app.Home)
-	mux.HandleFunc("GET /register", app.Register)
-	mux.HandleFunc("GET /login", app.Login)
-	mux.HandleFunc("GET /products", app.Products)
-	mux.HandleFunc("GET /product", app.Product)
+	mux.HandleFunc("GET /{$}", app.RenderHome)
+	mux.HandleFunc("GET /register", app.RenderRegister)
+	mux.HandleFunc("GET /login", app.RenderLogin)
+	mux.HandleFunc("GET /products", app.RenderProducts)
+	mux.HandleFunc("GET /product", app.RenderProduct)
 
-	mux.HandleFunc("POST api/login", app.ApiLogin)
+	mux.HandleFunc("POST /api/login", app.LoginUser)
+	mux.HandleFunc("POST /api/register", app.RegisterUser)
 
 	log.Print("Starting Server")
 	err = http.ListenAndServe(":5050", mux)
