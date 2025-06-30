@@ -14,7 +14,7 @@ func main() {
 	mux := http.NewServeMux()
 	staticDir := "./static"
 	fileServer := http.FileServer(http.Dir(staticDir))
-	mux.Handle("/static/", http.StripPrefix("static/", fileServer))
+	mux.Handle("/static/", http.StripPrefix("/static/", fileServer))
 	dsn := os.Getenv("PG_DATABASE_URL")
 	if dsn == "" {
 		log.Fatal("No database")
@@ -37,9 +37,10 @@ func main() {
 	mux.HandleFunc("POST /api/login", app.LoginUser)
 	mux.HandleFunc("POST /api/register", app.RegisterUser)
 	mux.HandleFunc("POST /api/product/{id}", app.ListProduct)
+	loggedHandler := api.RouteLogger(mux)
 
 	log.Print("Starting Server")
-	err = http.ListenAndServe(":5050", mux)
+	err = http.ListenAndServe(":5050", loggedHandler)
 	if err != nil {
 		log.Fatalf("Error Starting Server %v", err)
 	}

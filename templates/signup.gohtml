@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign Up - LapBytes</title>
+    <link rel="stylesheet" href="/static/css/signup-styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <div class="signup-container">
+        <div class="signup-card">
+            <div class="card-header">
+                <div class="logo">
+                    <i class="fas fa-laptop"></i>
+                    <span>LapBytes</span>
+                </div>
+                <h2>Create Account</h2>
+                <p>Sign up to get started</p>
+            </div>
+            <div id="response-message"></div>
+            <form class="signup-form" id="signupForm">
+                <div class="form-group">
+                    <label for="email">Email</label>
+                    <input 
+                        type="email" 
+                        id="email" 
+                        name="email" 
+                        placeholder="Enter your email"
+                        required
+                    >
+                </div>
+
+                <div class="form-group">
+                    <label for="username">Username</label>
+                    <input 
+                        type="text" 
+                        id="username" 
+                        name="username" 
+                        placeholder="Choose a username"
+                        required
+                    >
+                </div>
+
+                <div class="form-group">
+                    <label for="password">Password</label>
+                    <input 
+                        type="password" 
+                        id="password" 
+                        name="password" 
+                        placeholder="Create a password"
+                        required
+                    >
+                </div>
+
+                <button type="submit" class="submit-btn">
+                    <span class="button-text">Sign Up</span>
+                    <span id="loading" style="display: none;">
+                        <i class="fas fa-spinner fa-spin"></i> Creating account...
+                    </span>
+                </button>
+            </form>
+
+            <div class="card-footer">
+                <p>Already have an account? <a href="/login">Sign in</a></p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+    document.getElementById('signupForm').addEventListener('submit', async function(e) {
+        e.preventDefault();
+        
+        const button = this.querySelector('.submit-btn');
+        const buttonText = this.querySelector('.button-text');
+        const loading = this.querySelector('#loading');
+        const responseDiv = document.getElementById('response-message');
+        
+        // Clear previous messages
+        responseDiv.innerHTML = '';
+        
+        buttonText.style.display = 'none';
+        loading.style.display = 'inline';
+        button.disabled = true;
+        
+        try {
+            const formData = new FormData(this);
+            
+            const response = await fetch('/api/register', {
+                method: 'POST',
+                body: formData
+            });
+            
+            const result = await response.json();
+            
+            if (response.ok) {
+                // Success
+                responseDiv.innerHTML = `
+                    <div class="success-message">
+                        <i class="fas fa-check-circle"></i>
+                        ${result.message}
+                    </div>
+                `;
+                this.reset();
+                
+                setTimeout(() => {
+                    window.location.href = '/login';
+                }, 2000);
+            } else {
+                responseDiv.innerHTML = `
+                    <div class="error-message">
+                        <i class="fas fa-exclamation-circle"></i>
+                        ${result.error || 'Registration failed'}
+                    </div>
+                `;
+            }
+        } catch (error) {
+            responseDiv.innerHTML = `
+                <div class="error-message">
+                    <i class="fas fa-wifi"></i>
+                    Network error. Please check your connection and try again.
+                </div>
+            `;
+        } finally {
+            // Reset state
+            buttonText.style.display = 'inline';
+            loading.style.display = 'none';
+            button.disabled = false;
+        }
+    });
+    </script>
+</body>
+</html>

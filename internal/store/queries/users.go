@@ -13,7 +13,7 @@ func InsertUser(pool *pgxpool.Pool, user model.User) (userId int, err error) {
 	stmt := `
 	INSERT INTO users (username,email,passwordhash,isadmin,accesslevel,createdat,updatedat)
 	VALUES ($1,$2,$3,$4,$5,$6,$7)
-	RETURING id
+	RETURNING id
 	`
 	err = pool.QueryRow(context.Background(), stmt,
 		user.Username,

@@ -1,0 +1,586 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LapBytes -Laptops Store</title>
+    <link rel="stylesheet" href="/static/css/styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="container">
+            <div class="nav-brand">
+                <i class="fas fa-laptop"></i>
+                <span>LapBytes</span>
+            </div>
+            <nav class="nav-menu">
+                <a href="#" class="nav-link">Home</a>
+                <a href="#" class="nav-link">Laptops</a>
+                <a href="#" class="nav-link">Brands</a>
+                <a href="#" class="nav-link">Support</a>
+                <a href="#" class="nav-link">Contact</a>
+            </nav>
+            <div class="nav-actions">
+                <button class="search-btn">
+                    <i class="fas fa-search"></i>
+                </button>
+                <button class="cart-btn">
+                    <i class="fas fa-shopping-cart"></i>
+                    <span class="cart-count">0</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="container">
+            <div class="hero-content">
+                <h1>Find Your Perfect Laptop</h1>
+                <p>Discover premium laptops with cutting-edge technology and unbeatable performance</p>
+                <div class="hero-stats">
+                    <div class="stat">
+                        <span class="stat-number">500+</span>
+                        <span class="stat-label">Laptops</span>
+                    </div>
+                    <div class="stat">
+                        <span class="stat-number">50+</span>
+                        <span class="stat-label">Brands</span>
+                    </div>
+                    <div class="stat">
+                        <span class="stat-number">24/7</span>
+                        <span class="stat-label">Support</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Filters Section -->
+    <section class="filters">
+        <div class="container">
+            <div class="filters-header">
+                <h2>Browse Laptops</h2>
+                <div class="view-toggle">
+                    <button class="view-btn active">
+                        <i class="fas fa-th-large"></i>
+                    </button>
+                    <button class="view-btn">
+                        <i class="fas fa-list"></i>
+                    </button>
+                </div>
+            </div>
+            <div class="filters-bar">
+                <select class="filter-select">
+                    <option>All Brands</option>
+                    <option>Dell</option>
+                    <option>HP</option>
+                    <option>Lenovo</option>
+                    <option>Apple</option>
+                </select>
+                <select class="filter-select">
+                    <option>Price Range</option>
+                    <option>Under KSH 65,000</option>
+                    <option>KSH 65,000 - KSH 130,000</option>
+                    <option>KSH 130,000 - KSH 260,000</option>
+                    <option>Above KSH 260,000</option>
+                </select>
+                <select class="filter-select">
+                    <option>RAM Size</option>
+                    <option>8GB</option>
+                    <option>16GB</option>
+                    <option>32GB</option>
+                </select>
+                <select class="filter-select">
+                    <option>Storage Type</option>
+                    <option>SSD</option>
+                    <option>HDD</option>
+                    <option>Hybrid</option>
+                </select>
+            </div>
+        </div>
+    </section>
+
+    <!-- Products Grid -->
+    <section class="products">
+        <div class="container">
+            <div class="products-grid">
+                <!-- Laptop Card 1 -->
+                <div class="product-card">
+                    <div class="product-image">
+                        <img src="/placeholder.svg?height=200&width=300" alt="Dell XPS 13">
+                        <div class="product-badges">
+                            <span class="badge in-stock">In Stock</span>
+                            <span class="badge has-gpu">GPU</span>
+                        </div>
+                    </div>
+                    <div class="product-info">
+                        <div class="product-header">
+                            <h3 class="product-name">Dell XPS 13</h3>
+                            <span class="product-brand">Dell</span>
+                        </div>
+                        <div class="product-price">KSH 168,899</div>
+                        
+                        <div class="product-specs">
+                            <div class="spec-group">
+                                <h4>System</h4>
+                                <div class="spec-item">
+                                    <span class="spec-label">OS:</span>
+                                    <span class="spec-value">Windows 11 Pro</span>
+                                </div>
+                                <div class="spec-item">
+                                    <span class="spec-label">Screen:</span>
+                                    <span class="spec-value">13.3"</span>
+                                </div>
+                                <div class="spec-item">
+                                    <span class="spec-label">Year:</span>
+                                    <span class="spec-value">2024</span>
+                                </div>
+                            </div>
+                            
+                            <div class="spec-group">
+                                <h4>Performance</h4>
+                                <div class="spec-item">
+                                    <span class="spec-label">CPU:</span>
+                                    <span class="spec-value">Intel Core i7 13th Gen</span>
+                                </div>
+                                <div class="spec-item">
+                                    <span class="spec-label">RAM:</span>
+                                    <span class="spec-value">16GB</span>
+                                </div>
+                                <div class="spec-item">
+                                    <span class="spec-label">GPU:</span>
+                                    <span class="spec-value">Intel Iris Xe (Integrated)</span>
+                                </div>
+                            </div>
+                            
+                            <div class="spec-group">
+                                <h4>Storage</h4>
+                                <div class="spec-item">
+                                    <span class="spec-label">SSD:</span>
+                                    <span class="spec-value">512GB</span>
+                                </div>
+                                <div class="spec-item">
+                                    <span class="spec-label">HDD:</span>
+                                    <span class="spec-value">None</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="product-actions">
+                            <button class="btn btn-primary">Add to Cart</button>
+                            <button class="btn btn-secondary">
+                                <i class="fas fa-heart"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Laptop Card 2 -->
+                <div class="product-card">
+                    <div class="product-image">
+                        <img src="/placeholder.svg?height=200&width=300" alt="MacBook Pro 14">
+                        <div class="product-badges">
+                            <span class="badge in-stock">In Stock</span>
+                            <span class="badge has-gpu">Dedicated GPU</span>
+                        </div>
+                    </div>
+                    <div class="product-info">
+                        <div class="product-header">
+                            <h3 class="product-name">MacBook Pro 14"</h3>
+                            <span class="product-brand">Apple</span>
+                        </div>
+                        <div class="product-price">KSH 324,899</div>
+                        
+                        <div class="product-specs">
+                            <div class="spec-group">
+                                <h4>System</h4>
+                                <div class="spec-item">
+                                    <span class="spec-label">OS:</span>
+                                    <span class="spec-value">macOS Sonoma</span>
+                                </div>
+                                <div class="spec-item">
+                                    <span class="spec-label">Screen:</span>
+                                    <span class="spec-value">14.2"</span>
+                                </div>
+                                <div class="spec-item">
+                                    <span class="spec-label">Year:</span>
+                                    <span class="spec-value">2024</span>
+                                </div>
+                            </div>
+                            
+                            <div class="spec-group">
+                                <h4>Performance</h4>
+                                <div class="spec-item">
+                                    <span class="spec-label">CPU:</span>
+                                    <span class="spec-value">Apple M3 Pro</span>
+                                </div>
+                                <div class="spec-item">
+                                    <span class="spec-label">RAM:</span>
+                                    <span class="spec-value">32GB</span>
+                                </div>
+                                <div class="spec-item">
+                                    <span class="spec-label">GPU:</span>
+                                    <span class="spec-value">Apple M3 Pro GPU</span>
+                                </div>
+                            </div>
+                            
+                            <div class="spec-group">
+                                <h4>Storage</h4>
+                                <div class="spec-item">
+                                    <span class="spec-label">SSD:</span>
+                                    <span class="spec-value">1TB</span>
+                                </div>
+                                <div class="spec-item">
+                                    <span class="spec-label">HDD:</span>
+                                    <span class="spec-value">None</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="product-actions">
+                            <button class="btn btn-primary">Add to Cart</button>
+                            <button class="btn btn-secondary">
+                                <i class="fas fa-heart"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Laptop Card 3 -->
+                <div class="product-card">
+                    <div class="product-image">
+                        <img src="/placeholder.svg?height=200&width=300" alt="ThinkPad X1 Carbon">
+                        <div class="product-badges">
+                            <span class="badge low-stock">Low Stock</span>
+                        </div>
+                    </div>
+                    <div class="product-info">
+                        <div class="product-header">
+                            <h3 class="product-name">ThinkPad X1 Carbon</h3>
+                            <span class="product-brand">Lenovo</span>
+                        </div>
+                        <div class="product-price">KSH 246,899</div>
+                        
+                        <div class="product-specs">
+                            <div class="spec-group">
+                                <h4>System</h4>
+                                <div class="spec-item">
+                                    <span class="spec-label">OS:</span>
+                                    <span class="spec-value">Windows 11 Pro</span>
+                                </div>
+                                <div class="spec-item">
+                                    <span class="spec-label">Screen:</span>
+                                    <span class="spec-value">14.0"</span>
+                                </div>
+                                <div class="spec-item">
+                                    <span class="spec-label">Year:</span>
+                                    <span class="spec-value">2024</span>
+                                </div>
+                            </div>
+                            
+                            <div class="spec-group">
+                                <h4>Performance</h4>
+                                <div class="spec-item">
+                                    <span class="spec-label">CPU:</span>
+                                    <span class="spec-value">Intel Core i7 13th Gen</span>
+                                </div>
+                                <div class="spec-item">
+                                    <span class="spec-label">RAM:</span>
+                                    <span class="spec-value">16GB</span>
+                                </div>
+                                <div class="spec-item">
+                                    <span class="spec-label">GPU:</span>
+                                    <span class="spec-value">Intel Iris Xe (Integrated)</span>
+                                </div>
+                            </div>
+                            
+                            <div class="spec-group">
+                                <h4>Storage</h4>
+                                <div class="spec-item">
+                                    <span class="spec-label">SSD:</span>
+                                    <span class="spec-value">512GB</span>
+                                </div>
+                                <div class="spec-item">
+                                    <span class="spec-label">HDD:</span>
+                                    <span class="spec-value">None</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="product-actions">
+                            <button class="btn btn-primary">Add to Cart</button>
+                            <button class="btn btn-secondary">
+                                <i class="fas fa-heart"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Laptop Card 4 -->
+                <div class="product-card">
+                    <div class="product-image">
+                        <img src="/placeholder.svg?height=200&width=300" alt="HP Spectre x360">
+                        <div class="product-badges">
+                            <span class="badge out-of-stock">Out of Stock</span>
+                        </div>
+                    </div>
+                    <div class="product-info">
+                        <div class="product-header">
+                            <h3 class="product-name">HP Spectre x360</h3>
+                            <span class="product-brand">HP</span>
+                        </div>
+                        <div class="product-price">KSH 207,899</div>
+                        
+                        <div class="product-specs">
+                            <div class="spec-group">
+                                <h4>System</h4>
+                                <div class="spec-item">
+                                    <span class="spec-label">OS:</span>
+                                    <span class="spec-value">Windows 11 Home</span>
+                                </div>
+                                <div class="spec-item">
+                                    <span class="spec-label">Screen:</span>
+                                    <span class="spec-value">13.5"</span>
+                                </div>
+                                <div class="spec-item">
+                                    <span class="spec-label">Year:</span>
+                                    <span class="spec-value">2023</span>
+                                </div>
+                            </div>
+                            
+                            <div class="spec-group">
+                                <h4>Performance</h4>
+                                <div class="spec-item">
+                                    <span class="spec-label">CPU:</span>
+                                    <span class="spec-value">Intel Core i5 12th Gen</span>
+                                </div>
+                                <div class="spec-item">
+                                    <span class="spec-label">RAM:</span>
+                                    <span class="spec-value">16GB</span>
+                                </div>
+                                <div class="spec-item">
+                                    <span class="spec-label">GPU:</span>
+                                    <span class="spec-value">Intel Iris Xe (Integrated)</span>
+                                </div>
+                            </div>
+                            
+                            <div class="spec-group">
+                                <h4>Storage</h4>
+                                <div class="spec-item">
+                                    <span class="spec-label">SSD:</span>
+                                    <span class="spec-value">1TB</span>
+                                </div>
+                                <div class="spec-item">
+                                    <span class="spec-label">HDD:</span>
+                                    <span class="spec-value">None</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="product-actions">
+                            <button class="btn btn-primary disabled">Out of Stock</button>
+                            <button class="btn btn-secondary">
+                                <i class="fas fa-heart"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Laptop Card 5 -->
+                <div class="product-card">
+                    <div class="product-image">
+                        <img src="/placeholder.svg?height=200&width=300" alt="ASUS ROG Strix">
+                        <div class="product-badges">
+                            <span class="badge in-stock">In Stock</span>
+                            <span class="badge has-gpu">RTX 4070</span>
+                        </div>
+                    </div>
+                    <div class="product-info">
+                        <div class="product-header">
+                            <h3 class="product-name">ASUS ROG Strix G16</h3>
+                            <span class="product-brand">ASUS</span>
+                        </div>
+                        <div class="product-price">KSH 285,899</div>
+                        
+                        <div class="product-specs">
+                            <div class="spec-group">
+                                <h4>System</h4>
+                                <div class="spec-item">
+                                    <span class="spec-label">OS:</span>
+                                    <span class="spec-value">Windows 11 Home</span>
+                                </div>
+                                <div class="spec-item">
+                                    <span class="spec-label">Screen:</span>
+                                    <span class="spec-value">16.0"</span>
+                                </div>
+                                <div class="spec-item">
+                                    <span class="spec-label">Year:</span>
+                                    <span class="spec-value">2024</span>
+                                </div>
+                            </div>
+                            
+                            <div class="spec-group">
+                                <h4>Performance</h4>
+                                <div class="spec-item">
+                                    <span class="spec-label">CPU:</span>
+                                    <span class="spec-value">AMD Ryzen 7 7700HX</span>
+                                </div>
+                                <div class="spec-item">
+                                    <span class="spec-label">RAM:</span>
+                                    <span class="spec-value">32GB</span>
+                                </div>
+                                <div class="spec-item">
+                                    <span class="spec-label">GPU:</span>
+                                    <span class="spec-value">NVIDIA RTX 4070</span>
+                                </div>
+                            </div>
+                            
+                            <div class="spec-group">
+                                <h4>Storage</h4>
+                                <div class="spec-item">
+                                    <span class="spec-label">SSD:</span>
+                                    <span class="spec-value">1TB</span>
+                                </div>
+                                <div class="spec-item">
+                                    <span class="spec-label">HDD:</span>
+                                    <span class="spec-value">1TB</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="product-actions">
+                            <button class="btn btn-primary">Add to Cart</button>
+                            <button class="btn btn-secondary">
+                                <i class="fas fa-heart"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Laptop Card 6 -->
+                <div class="product-card">
+                    <div class="product-image">
+                        <img src="/placeholder.svg?height=200&width=300" alt="Surface Laptop 5">
+                        <div class="product-badges">
+                            <span class="badge in-stock">In Stock</span>
+                        </div>
+                    </div>
+                    <div class="product-info">
+                        <div class="product-header">
+                            <h3 class="product-name">Surface Laptop 5</h3>
+                            <span class="product-brand">Microsoft</span>
+                        </div>
+                        <div class="product-price">KSH 181,899</div>
+                        
+                        <div class="product-specs">
+                            <div class="spec-group">
+                                <h4>System</h4>
+                                <div class="spec-item">
+                                    <span class="spec-label">OS:</span>
+                                    <span class="spec-value">Windows 11 Home</span>
+                                </div>
+                                <div class="spec-item">
+                                    <span class="spec-label">Screen:</span>
+                                    <span class="spec-value">13.5"</span>
+                                </div>
+                                <div class="spec-item">
+                                    <span class="spec-label">Year:</span>
+                                    <span class="spec-value">2023</span>
+                                </div>
+                            </div>
+                            
+                            <div class="spec-group">
+                                <h4>Performance</h4>
+                                <div class="spec-item">
+                                    <span class="spec-label">CPU:</span>
+                                    <span class="spec-value">Intel Core i7 12th Gen</span>
+                                </div>
+                                <div class="spec-item">
+                                    <span class="spec-label">RAM:</span>
+                                    <span class="spec-value">16GB</span>
+                                </div>
+                                <div class="spec-item">
+                                    <span class="spec-label">GPU:</span>
+                                    <span class="spec-value">Intel Iris Xe (Integrated)</span>
+                                </div>
+                            </div>
+                            
+                            <div class="spec-group">
+                                <h4>Storage</h4>
+                                <div class="spec-item">
+                                    <span class="spec-label">SSD:</span>
+                                    <span class="spec-value">512GB</span>
+                                </div>
+                                <div class="spec-item">
+                                    <span class="spec-label">HDD:</span>
+                                    <span class="spec-value">None</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="product-actions">
+                            <button class="btn btn-primary">Add to Cart</button>
+                            <button class="btn btn-secondary">
+                                <i class="fas fa-heart"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="load-more">
+                <button class="btn btn-outline">Load More Laptops</button>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <div class="footer-brand">
+                        <i class="fas fa-laptop"></i>
+                        <span>LapBytes</span>
+                    </div>
+                    <p>Your trusted partner for premium laptops and technology solutions.</p>
+                </div>
+                <div class="footer-section">
+                    <h4>Quick Links</h4>
+                    <ul>
+                        <li><a href="#">About Us</a></li>
+                        <li><a href="#">Contact</a></li>
+                        <li><a href="#">Support</a></li>
+                        <li><a href="#">Warranty</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h4>Categories</h4>
+                    <ul>
+                        <li><a href="#">Gaming Laptops</a></li>
+                        <li><a href="#">Business Laptops</a></li>
+                        <li><a href="#">Ultrabooks</a></li>
+                        <li><a href="#">Workstations</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h4>Follow Us</h4>
+                    <div class="social-links">
+                        <a href="#"><i class="fab fa-facebook"></i></a>
+                        <a href="#"><i class="fab fa-twitter"></i></a>
+                        <a href="#"><i class="fab fa-instagram"></i></a>
+                        <a href="#"><i class="fab fa-linkedin"></i></a>
+                    </div>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2025 benar!. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+</body>
+</html>

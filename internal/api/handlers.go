@@ -3,6 +3,7 @@ package api
 import (
 	"encoding/json"
 	"fmt"
+	"html/template"
 	"lapbytes/internal/model"
 	"lapbytes/internal/store/queries"
 	"log"
@@ -39,17 +40,60 @@ type App struct {
 */
 // Core Rendering
 func (a *App) RenderHome(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprint(w, "Hello Home Page")
+	tmpl, err := template.ParseFiles("templates/index.gohtml")
+	if err != nil {
+		log.Printf("Error Encountered while Parsing index template : %v", err)
+		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+		return
+	}
+	w.Header().Set("Content-Type", "text/html")
+	if err := tmpl.Execute(w, nil); err != nil {
+		log.Printf("Error Executing Index Templates")
+	}
+	//
 }
 
 func (a *App) RenderRegister(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprint(w, "Hello Register Page")
+	tmpl, err := template.ParseFiles("templates/signup.gohtml")
+	if err != nil {
+		log.Printf("Error while parsing templates: %v", err)
+		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "text/html; charset=utf-8")
+	err = tmpl.Execute(w, nil)
+	if err != nil {
+		log.Printf("Error While Executing Template %v", err)
+		return
+	}
 }
 func (a *App) RenderLogin(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprint(w, "Hello Login Page")
+	tmpl, err := template.ParseFiles("templates/login.gohtml")
+	if err != nil {
+		log.Printf("Error Encountered while parsing login template : %v", err)
+		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+		return
+	}
+	w.Header().Set("Content-Type", "text/html ; charset=utf-8")
+	err = tmpl.Execute(w, nil)
+	if err != nil {
+		log.Printf("Error Executing Login Template %v", err)
+		return
+	}
 }
+
 func (a *App) RenderProducts(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprint(w, "Hello Products Page")
+	tmpl, err := template.ParseFiles("templates/index.gohtml")
+	if err != nil {
+		log.Printf("Error Encountered while Parsing index template : %v", err)
+		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+		return
+	}
+	w.Header().Set("Content-Type", "text/html")
+	if err := tmpl.Execute(w, nil); err != nil {
+		log.Printf("Error Executing Index Templates")
+	}
 }
 
 func (a *App) RenderProduct(w http.ResponseWriter, r *http.Request) {
@@ -66,26 +110,47 @@ func (a *App) RenderProduct(w http.ResponseWriter, r *http.Request) {
 // called at /api/..., it logs in a user by verifying credentials and issuing jwts
 func (a *App) LoginUser(w http.ResponseWriter, r *http.Request) {
 	//Logging later
-
 	email := r.FormValue("email")
 	password := r.FormValue("password")
+	if email == "" || password == "" {
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(map[string]string{
+			"error": "All Fields are required",
+		})
+	}
 	passwordhash, err := queries.GetUserHash(a.DB, email)
 	if err != nil {
-		http.Error(w, "Invalid Credentials", http.StatusUnauthorized)
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusUnauthorized)
+		json.NewEncoder(w).Encode(map[string]string{
+			"error": "Invalid Credentials. Please Check again",
+		})
 		return
 	}
+
 	loggedIn := verifyPasswordHash(password, passwordhash)
 	if !loggedIn {
-		http.Error(w, "Invalid Credentials", http.StatusUnauthorized)
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusUnauthorized)
+		json.NewEncoder(w).Encode(map[string]string{
+			"error": "Invalid Credentials. Please Check again",
+		})
+		// http.Error(w, "Invalid Credentials", http.StatusUnauthorized)
 		return
 	}
 
 	InitKeys()
 	accessToken, err := IssueKeys()
 	if err != nil {
-		http.Error(w, "Error Occured During Login", http.StatusInternalServerError)
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusInternalServerError)
+		json.NewEncoder(w).Encode(map[string]string{
+			"error": "An Error Occured During Login",
+		})
 		return
 	}
+
 	response := model.LoginResponse{
 		AccessToken: accessToken,
 		TokenType:   "Bearer",
@@ -94,7 +159,11 @@ func (a *App) LoginUser(w http.ResponseWriter, r *http.Request) {
 	//Set cookies + A refresh token
 	refreshToken, err := generateRandomString()
 	if err != nil {
-		http.Error(w, "Error Occured During Login", http.StatusInternalServerError)
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusInternalServerError)
+		json.NewEncoder(w).Encode(map[string]string{
+			"error": "An Error Occured During Login",
+		})
 		return
 
 	}
@@ -124,10 +193,23 @@ func (a *App) RegisterUser(w http.ResponseWriter, r *http.Request) {
 	username := r.FormValue("username")
 	email := r.FormValue("email")
 	password := r.FormValue("password")
+	if username == "" || email == "" || password == "" {
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(map[string]string{
+			"error": "All fields are required",
+		})
+		return
+	}
 	password_hash, err := hashPassword(password)
 	if err != nil {
-		http.Error(w, "Error Occured During Registration", http.StatusInternalServerError)
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusInternalServerError)
+		json.NewEncoder(w).Encode(map[string]string{
+			"error": "An error occured during registration",
+		})
 		return
+
 	}
 
 	current_time := time.Now()
@@ -142,10 +224,21 @@ func (a *App) RegisterUser(w http.ResponseWriter, r *http.Request) {
 
 	userId, err := queries.InsertUser(a.DB, *user)
 	if err != nil {
-		http.Error(w, "Could not Create Account", http.StatusInternalServerError)
+		log.Printf("Database Error: %v", err)
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusInternalServerError)
+		json.NewEncoder(w).Encode(map[string]string{
+			"error": "Could not Create Account. Email Might already exist",
+		})
 		return
 	}
-	log.Print(userId)
+	log.Printf("created user: %v", userId)
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusCreated)
+	json.NewEncoder(w).Encode(map[string]interface{}{
+		"success": true,
+		"message": "account created successfully",
+	})
 
 }
 

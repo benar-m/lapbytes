@@ -9,7 +9,7 @@ import (
 )
 
 func generateRandomString() (string, error) {
-	randomString := make([]byte, 32)
+	randomString := make([]byte, 8)
 	_, err := rand.Read(randomString)
 	if err != nil {
 		return "", fmt.Errorf("failed to generate a string: %+v", err)
@@ -20,7 +20,7 @@ func generateRandomString() (string, error) {
 
 func hashPassword(password string) (string, error) {
 
-	hash, err := bcrypt.GenerateFromPassword([]byte(password), 32)
+	hash, err := bcrypt.GenerateFromPassword([]byte(password), 8)
 	return string(hash), err
 
 }
