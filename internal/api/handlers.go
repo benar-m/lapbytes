@@ -7,6 +7,7 @@ import (
 	"lapbytes/internal/store/queries"
 	"log"
 	"net/http"
+	"strconv"
 	"time"
 
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -118,7 +119,7 @@ func (a *App) LoginUser(w http.ResponseWriter, r *http.Request) {
 // Called at /api/..., this function creates a new user in the database
 func (a *App) RegisterUser(w http.ResponseWriter, r *http.Request) {
 	//later sanitize, middleware maybe
-	//refactor to more direct or keep it as defesive as it is
+	//refactor to more direct or keep it as defensive as it is
 	user := &model.User{}
 	username := r.FormValue("username")
 	email := r.FormValue("email")
@@ -145,5 +146,54 @@ func (a *App) RegisterUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	log.Print(userId)
+
+}
+
+/*
+##  Products
+- `GET /api/products` — List all laptops
+- `GET /api/products/{id}` — Get product details
+- `GET /api/products/search?q=` — Search or filter products
+*/
+
+func (a *App) ListProducts(w http.ResponseWriter, r *http.Request) {
+	//lojik to get the Products
+}
+
+func (a *App) ListProduct(w http.ResponseWriter, r *http.Request) {
+	productId := r.PathValue("id")
+	id, err := strconv.Atoi(productId)
+	if err != nil || id < 1 {
+		http.Error(w, "Invalid Request", http.StatusBadRequest)
+		return
+	}
+	product, err := queries.QueryLaptop(a.DB, id)
+	if err != nil {
+		if err.Error() == "no rows in result set" {
+			http.Error(w, "Item Not Found", http.StatusNotFound)
+			return
+		}
+		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+		fmt.Printf("Error occured: %+v", err)
+		return
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	err = json.NewEncoder(w).Encode(product) //Maybe encode to memory first later to avoid sending malformed json
+	if err != nil {
+		//log better
+		return
+
+	}
+	fmt.Println("Data Sent Succesfully")
+
+}
+
+// Admin endpoint---need an admin middleware
+func (a *App) AddProducts(w http.ResponseWriter, r *http.Request) {
+	//lojik to get the Products
+}
+
+func (a *App) RemoveProduct(w http.ResponseWriter, r *http.Request) {
 
 }

@@ -36,6 +36,7 @@ func main() {
 
 	mux.HandleFunc("POST /api/login", app.LoginUser)
 	mux.HandleFunc("POST /api/register", app.RegisterUser)
+	mux.HandleFunc("POST /api/product/{id}", app.ListProduct)
 
 	log.Print("Starting Server")
 	err = http.ListenAndServe(":5050", mux)
