@@ -8,50 +8,6 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
-func InsertLaptop(pool *pgxpool.Pool, lp model.Laptop) (product_id int, err error) {
-
-	stmt := `
-	INSERT INTO products (name, brand, operatingsystem, operatingsystemversion, 
-    hdd, ssd, hddsize, ssdsize, ramsize, 
-    cpumaker, cpugen, cpumodel, yom, imageurl, price, screensize,
-    hasgpu, gpumake, gpumaker, hasigpu, isinstock, instock)
-	
-	VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21,$22,$23)
-	
-	RETURNING id
-	`
-
-	err = pool.QueryRow(context.Background(), stmt,
-		lp.Name,
-		lp.Brand,
-		lp.Operating_system,
-		lp.Operating_system_version,
-		lp.HDD,
-		lp.SSD,
-		lp.HDD_size,
-		lp.SSD_size,
-		lp.Ram_size,
-		lp.CPU_maker,
-		lp.CPU_gen,
-		lp.CPU_model,
-		lp.YOM,
-		lp.Image_url,
-		lp.Price,
-		lp.Screen_size,
-		lp.Has_gpu,
-		lp.Gpu_make,
-		lp.Gpu_maker,
-		lp.Has_igpu,
-		lp.Is_in_stock,
-		lp.In_stock,
-	).Scan(&product_id)
-	if err != nil {
-		return 0, err
-	}
-	return product_id, nil
-
-}
-
 func QueryLaptop(pool *pgxpool.Pool, id int) (laptop model.Laptop, err error) {
 	stmt := `
 	SELECT id, name, brand, operatingsystem, operatingsystemversion, 
@@ -92,14 +48,51 @@ func QueryLaptop(pool *pgxpool.Pool, id int) (laptop model.Laptop, err error) {
 	return laptop, nil
 }
 
-func DeleteLaptop(pool *pgxpool.Pool, id int) error {
-
+func QueryLaptops(pool *pgxpool.Pool, limit int, offset int) (laptops []model.Laptop, err error) {
 	stmt := `
-		DELETE FROM products WHERE id=$1
-	`
-	_, err := pool.Exec(context.Background(), stmt, id)
+		SELECT id, name, brand, operatingsystem, operatingsystemversion, 
+           hdd, ssd, hddsize, ssdsize, ramsize, 
+           cpumaker, cpugen, cpumodel, yom, imageurl, price, screensize,
+           hasgpu, gpumake, gpumaker, hasigpu, isinstock
+		FROM products 
+		ORDER BY createdat DESC
+		LIMIT $1 OFFSET $2
+`
+	rows, err := pool.Query(context.Background(), stmt, limit, offset)
 	if err != nil {
-		return err
+		return nil, err
 	}
-	return nil
+
+	for rows.Next() {
+		var p model.Laptop
+		//if err occurs on scan, return incomplete data*
+		err = rows.Scan(&p.Id,
+			&p.Name,
+			&p.Brand,
+			&p.Operating_system,
+			&p.Operating_system_version,
+			&p.HDD,
+			&p.SSD,
+			&p.HDD_size,
+			&p.SSD_size,
+			&p.Ram_size,
+			&p.CPU_maker,
+			&p.CPU_gen,
+			&p.CPU_model,
+			&p.YOM,
+			&p.Image_url,
+			&p.Price,
+			&p.Screen_size,
+			&p.Has_gpu,
+			&p.Gpu_make,
+			&p.Gpu_maker,
+			&p.Has_igpu,
+			&p.Is_in_stock,
+		)
+		if err != nil {
+			return nil, err
+		}
+		laptops = append(laptops, p)
+	}
+	return laptops, nil
 }

@@ -31,17 +31,6 @@ func InsertUser(pool *pgxpool.Pool, user model.User) (userId int, err error) {
 	return userId, nil
 }
 
-func DeleteUser(pool *pgxpool.Pool, user model.User) error {
-	//lojik here
-	return nil
-
-}
-
-func GetUser(pool *pgxpool.Pool, id int) (user model.User, err error) {
-
-	return user, nil //watch out
-}
-
 func GetUserHash(pool *pgxpool.Pool, email string) (string, error) {
 	//Sanitize before bringing it here
 	var passwordhash string

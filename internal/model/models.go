@@ -30,7 +30,6 @@ type Laptop struct {
 	Gpu_maker                sql.NullString `json:"gpu_manufacturer" db:"gpumaker"`
 	Has_igpu                 bool           `json:"has_integrated_gpu" db:"hasigpu"`
 
-	//Stock - Hidden from users
 	Is_in_stock bool      `json:"is_in_stock" db:"isinstock"`
 	In_stock    int       `json:"-" db:"instock"`
 	Created_at  time.Time `json:"-" db:"createdat"`

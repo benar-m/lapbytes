@@ -16,6 +16,7 @@ func main() {
 	fileServer := http.FileServer(http.Dir(staticDir))
 	mux.Handle("/static/", http.StripPrefix("/static/", fileServer))
 	dsn := os.Getenv("PG_DATABASE_URL")
+
 	if dsn == "" {
 		log.Fatal("No database")
 	}
@@ -32,11 +33,19 @@ func main() {
 	mux.HandleFunc("GET /register", app.RenderRegister)
 	mux.HandleFunc("GET /login", app.RenderLogin)
 	mux.HandleFunc("GET /products", app.RenderProducts)
-	mux.HandleFunc("GET /product", app.RenderProduct)
+	mux.HandleFunc("GET /product/{id}", app.RenderProduct)
 
 	mux.HandleFunc("POST /api/login", app.LoginUser)
 	mux.HandleFunc("POST /api/register", app.RegisterUser)
-	mux.HandleFunc("POST /api/product/{id}", app.ListProduct)
+	mux.HandleFunc("GET /api/product/{id}", app.ListProduct)
+	mux.HandleFunc("GET /api/products/{limit}/{page}", app.ListProducts)
+
+	mux.HandleFunc("GET /api/admin/listusers/{limit}/{page}", app.ListUsers)
+	mux.HandleFunc("GET /api/admin/listuser/{id}", app.ListSingleUser)
+	mux.HandleFunc("POST /api/admin/deleteuser/{id}", app.DeleteUser)
+	mux.HandleFunc("POST /api/admin/deleteproduct/{id}", app.DeleteProduct)
+	mux.HandleFunc("POST /api/admin/addproduct", app.AddNewProduct)
+
 	loggedHandler := api.RouteLogger(mux)
 
 	log.Print("Starting Server")

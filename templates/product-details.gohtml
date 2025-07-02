@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Loading... - LapBytes</title>
+    <link rel="stylesheet" href="/static/css/styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        .product-details { max-width: 1200px; margin: 2rem auto; padding: 0 1rem; }
+        .back-link { color: #007bff; text-decoration: none; margin-bottom: 2rem; display: inline-flex; align-items: center; gap: 0.5rem; font-weight: 500; }
+        .back-link:hover { text-decoration: underline; }
+        .loading-state { text-align: center; padding: 4rem 0; }
+        .loading-spinner { width: 40px; height: 40px; border: 4px solid #f3f3f3; border-top: 4px solid #007bff; border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto 1rem; }
+        .error-state { text-align: center; padding: 4rem 0; color: #dc3545; }
+        .product-layout { display: grid; grid-template-columns: 1fr 1fr; gap: 3rem; margin-bottom: 3rem; }
+        .product-image-section { display: flex; justify-content: center; align-items: flex-start; }
+        .product-image-section img { max-width: 100%; max-height: 400px; height: auto; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.1); }
+        .no-image { width: 100%; max-width: 400px; height: 300px; background: #f8f9fa; display: flex; align-items: center; justify-content: center; border-radius: 12px; color: #6c757d; font-size: 1.1rem; border: 2px dashed #dee2e6; }
+        .product-info { display: flex; flex-direction: column; }
+        .product-title { font-size: 2.5rem; font-weight: 700; color: #212529; margin-bottom: 0.5rem; line-height: 1.2; }
+        .product-brand { font-size: 1.1rem; color: #6c757d; margin-bottom: 1.5rem; font-weight: 500; }
+        .product-price { font-size: 2.8rem; font-weight: 800; color: #007bff; margin-bottom: 1rem; }
+        .out-of-stock-badge { display: inline-block; background: #dc3545; color: white; padding: 0.5rem 1rem; border-radius: 6px; font-size: 0.9rem; font-weight: 600; margin-bottom: 2rem; }
+        .product-description { color: #6c757d; font-size: 1.1rem; line-height: 1.6; margin-bottom: 2rem; flex-grow: 1; }
+        .action-section { margin-top: auto; padding-top: 2rem; }
+        .add-to-cart-btn { background: #007bff; color: white; border: none; padding: 1rem 2.5rem; font-size: 1.1rem; font-weight: 600; border-radius: 8px; cursor: pointer; transition: all 0.3s ease; margin-right: 1rem; margin-bottom: 1rem; }
+        .add-to-cart-btn:hover:not(:disabled) { background: #0056b3; transform: translateY(-1px); }
+        .add-to-cart-btn:disabled { background: #6c757d; cursor: not-allowed; transform: none; }
+        .wishlist-btn { background: transparent; color: #007bff; border: 2px solid #007bff; padding: 1rem 1.5rem; font-size: 1.1rem; font-weight: 600; border-radius: 8px; cursor: pointer; transition: all 0.3s ease; }
+        .wishlist-btn:hover { background: #007bff; color: white; }
+        .specs-section { margin-top: 3rem; }
+        .specs-title { font-size: 2rem; font-weight: 700; color: #212529; margin-bottom: 2rem; text-align: center; }
+        .spec-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 2rem; }
+        .spec-category { background: #f8f9fa; padding: 2rem; border-radius: 12px; border: 1px solid #e9ecef; }
+        .spec-category-title { font-size: 1.3rem; font-weight: 700; color: #212529; margin-bottom: 1.5rem; display: flex; align-items: center; gap: 0.5rem; }
+        .spec-category-title i { color: #007bff; }
+        .spec-item { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; padding-bottom: 1rem; border-bottom: 1px solid #e9ecef; }
+        .spec-item:last-child { border-bottom: none; margin-bottom: 0; }
+        .spec-label { font-weight: 600; color: #495057; font-size: 1rem; }
+        .spec-value { font-weight: 500; color: #212529; text-align: right; font-size: 1rem; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        @media (max-width: 768px) {
+            .product-layout { grid-template-columns: 1fr; gap: 2rem; }
+            .product-title { font-size: 2rem; }
+            .product-price { font-size: 2.2rem; }
+            .spec-grid { grid-template-columns: 1fr; }
+            .add-to-cart-btn, .wishlist-btn { width: 100%; margin-right: 0; margin-bottom: 1rem; }
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <div class="container">
+            <div class="nav-brand">
+                <i class="fas fa-laptop"></i>
+                <span>LapBytes</span>
+            </div>
+            <nav class="nav-menu">
+                <a href="/" class="nav-link">Home</a>
+                <a href="#" class="nav-link">Laptops</a>
+                <a href="#" class="nav-link">Brands</a>
+                <a href="#" class="nav-link">Support</a>
+                <a href="#" class="nav-link">Contact</a>
+            </nav>
+        </div>
+    </header>
+
+    <div class="product-details">
+        <a href="/" class="back-link">
+            <i class="fas fa-arrow-left"></i> Back to Laptops
+        </a>
+        
+        <div id="loading-state" class="loading-state">
+            <div class="loading-spinner"></div>
+            <h3>Loading laptop details...</h3>
+        </div>
+        
+        <div id="error-state" class="error-state" style="display: none;">
+            <i class="fas fa-exclamation-triangle" style="font-size: 3rem; margin-bottom: 1rem;"></i>
+            <h3>Laptop Not Found</h3>
+            <p>The laptop you're looking for doesn't exist or has been removed.</p>
+            <button onclick="window.location.href='/'" class="add-to-cart-btn">Go Back Home</button>
+        </div>
+        
+        <div id="product-content" style="display: none;">
+            <div class="product-layout">
+                <div class="product-image-section">
+                    <img id="laptop-image" src="" alt="" onerror="this.style.display='none'">
+                    <div id="no-image" class="no-image" style="display: none;">
+                        <i class="fas fa-laptop" style="font-size: 3rem; margin-bottom: 1rem; display: block;"></i>
+                        No Image Available
+                    </div>
+                </div>
+                
+                <div class="product-info">
+                    <h1 id="laptop-title" class="product-title"></h1>
+                    <div id="laptop-brand" class="product-brand"></div>
+                    <div id="laptop-price" class="product-price"></div>
+                    <div id="out-of-stock-badge" class="out-of-stock-badge" style="display: none;">❌ Out of Stock</div>
+                    <div class="product-description">Premium laptop with cutting-edge technology and exceptional performance for all your computing needs.</div>
+                    <div class="action-section">
+                        <button id="add-to-cart-btn" class="add-to-cart-btn">Add to Cart</button>
+                        <button class="wishlist-btn"><i class="fas fa-heart"></i> Wishlist</button>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="specs-section">
+                <h2 class="specs-title">Technical Specifications</h2>
+                <div class="spec-grid">
+                    <div class="spec-category">
+                        <h3 class="spec-category-title"><i class="fas fa-desktop"></i> System Information</h3>
+                        <div class="spec-item">
+                            <span class="spec-label">Operating System</span>
+                            <span id="laptop-os" class="spec-value"></span>
+                        </div>
+                        <div class="spec-item">
+                            <span class="spec-label">Screen Size</span>
+                            <span id="laptop-screen" class="spec-value"></span>
+                        </div>
+                        <div class="spec-item">
+                            <span class="spec-label">Year of Manufacture</span>
+                            <span id="laptop-year" class="spec-value"></span>
+                        </div>
+                    </div>
+                    
+                    <div class="spec-category">
+                        <h3 class="spec-category-title"><i class="fas fa-microchip"></i> Performance</h3>
+                        <div class="spec-item">
+                            <span class="spec-label">Processor</span>
+                            <span id="laptop-cpu" class="spec-value"></span>
+                        </div>
+                        <div class="spec-item">
+                            <span class="spec-label">Memory (RAM)</span>
+                            <span id="laptop-ram" class="spec-value"></span>
+                        </div>
+                        <div class="spec-item">
+                            <span class="spec-label">Graphics</span>
+                            <span id="laptop-gpu" class="spec-value"></span>
+                        </div>
+                        <div class="spec-item">
+                            <span class="spec-label">Integrated GPU</span>
+                            <span id="laptop-igpu" class="spec-value"></span>
+                        </div>
+                    </div>
+                    
+                    <div class="spec-category">
+                        <h3 class="spec-category-title"><i class="fas fa-hdd"></i> Storage</h3>
+                        <div class="spec-item">
+                            <span class="spec-label">SSD Storage</span>
+                            <span id="laptop-ssd" class="spec-value"></span>
+                        </div>
+                        <div class="spec-item">
+                            <span class="spec-label">HDD Storage</span>
+                            <span id="laptop-hdd" class="spec-value"></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const pathParts = window.location.pathname.split('/');
+        const laptopId = pathParts[pathParts.length - 1];
+        const loadingState = document.getElementById('loading-state');
+        const errorState = document.getElementById('error-state');
+        const productContent = document.getElementById('product-content');
+        
+        async function fetchLaptopDetails() {
+            try {
+                const response = await fetch(`/api/product/${laptopId}`);
+                if (!response.ok) {
+                    throw new Error(response.status === 404 ? 'Laptop not found' : `HTTP error! status: ${response.status}`);
+                }
+                const laptop = await response.json();
+                loadingState.style.display = 'none';
+                productContent.style.display = 'block';
+                populateLaptopDetails(laptop);
+                document.title = `${laptop.brand} ${laptop.name} - LapBytes`;
+            } catch (error) {
+                loadingState.style.display = 'none';
+                errorState.style.display = 'block';
+            }
+        }
+        
+        function populateLaptopDetails(laptop) {
+            document.getElementById('laptop-title').textContent = `${laptop.brand} ${laptop.name}`;
+            document.getElementById('laptop-brand').textContent = laptop.brand;
+            document.getElementById('laptop-price').textContent = `KSH ${laptop.price.toLocaleString()}`;
+            
+            if (laptop.image_url) {
+                const img = document.getElementById('laptop-image');
+                img.src = laptop.image_url;
+                img.alt = laptop.name;
+                img.style.display = 'block';
+            } else {
+                document.getElementById('no-image').style.display = 'flex';
+            }
+            
+            const outOfStockBadge = document.getElementById('out-of-stock-badge');
+            const addToCartBtn = document.getElementById('add-to-cart-btn');
+            if (!laptop.is_in_stock) {
+                outOfStockBadge.style.display = 'block';
+                addToCartBtn.disabled = true;
+                addToCartBtn.textContent = 'Out of Stock';
+            }
+            
+            document.getElementById('laptop-os').textContent = `${laptop.operating_system || 'Windows'} ${laptop.operating_system_version || ''}`;
+            document.getElementById('laptop-screen').textContent = `${laptop.screen_size || '14'}"`;
+            document.getElementById('laptop-year').textContent = laptop.year_of_manufacture || '2024';
+            document.getElementById('laptop-cpu').textContent = `${laptop.cpu_maker || ''} ${laptop.cpu_generation || ''} ${laptop.cpu_model || ''}`.trim();
+            document.getElementById('laptop-ram').textContent = `${laptop.ram_size || '0'}GB`;
+            
+            let gpuText = 'Integrated Graphics';
+            if (laptop.has_gpu && (laptop.gpu_manufacturer?.String || laptop.gpu_model?.String)) {
+                gpuText = `${laptop.gpu_manufacturer?.String || ''} ${laptop.gpu_model?.String || ''}`.trim();
+            }
+            document.getElementById('laptop-gpu').textContent = gpuText;
+            document.getElementById('laptop-igpu').textContent = laptop.has_igpu ? 'Yes' : 'No';
+            document.getElementById('laptop-ssd').textContent = laptop.ssd ? `${laptop.ssd_size}GB` : 'None';
+            document.getElementById('laptop-hdd').textContent = laptop.hdd ? `${laptop.hdd_size}GB` : 'None';
+        }
+        
+        document.getElementById('add-to-cart-btn').addEventListener('click', function() {
+            if (!this.disabled) {
+                this.textContent = 'Added to Cart!';
+                this.style.backgroundColor = '#28a745';
+                setTimeout(() => {
+                    this.textContent = 'Add to Cart';
+                    this.style.backgroundColor = '';
+                }, 2000);
+            }
+        });
+        
+        document.addEventListener('DOMContentLoaded', function() {
+            if (laptopId && laptopId !== 'product') {
+                fetchLaptopDetails();
+            } else {
+                loadingState.style.display = 'none';
+                errorState.style.display = 'block';
+            }
+        });
+    </script>
+</body>
+</html>

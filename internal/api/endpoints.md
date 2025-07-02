@@ -39,16 +39,6 @@
 - `GET /api/admin/users/{id}` — View specific user details
 
 ---
-
-- `POST /api/products/{id}/reviews` — Add product review  
-- `GET /api/products/{id}/reviews` — Fetch reviews  
-- `GET /api/wishlist` — View wishlist  
-- `POST /api/wishlist` — Add to wishlist  
-- `DELETE /api/wishlist/{id}` — Remove from wishlist
-
-
----
-
 ## Render Endpoints 
 - `GET /` — Homepage  
 - `GET /login` — Login page  
