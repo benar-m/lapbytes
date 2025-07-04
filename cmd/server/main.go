@@ -4,6 +4,7 @@ import (
 	"context"
 	"lapbytes/internal/api"
 	"log"
+	"log/slog"
 	"net/http"
 	"os"
 
@@ -25,9 +26,12 @@ func main() {
 		log.Fatalf("Unable to Connect to the database: %+v", err)
 	}
 	defer pool.Close()
+	jsonlogger := slog.NewJSONHandler(os.Stdout, nil)
+	logger := slog.New(jsonlogger)
 
 	app := &api.App{
-		DB: pool,
+		DB:     pool,
+		Logger: logger,
 	}
 	mux.HandleFunc("GET /{$}", app.RenderHome)
 	mux.HandleFunc("GET /register", app.RenderRegister)
@@ -46,7 +50,7 @@ func main() {
 	mux.HandleFunc("POST /api/admin/deleteproduct/{id}", app.DeleteProduct)
 	mux.HandleFunc("POST /api/admin/addproduct", app.AddNewProduct)
 
-	loggedHandler := api.RouteLogger(mux)
+	loggedHandler := mux
 
 	log.Print("Starting Server")
 	err = http.ListenAndServe(":5050", loggedHandler)

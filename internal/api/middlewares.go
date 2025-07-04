@@ -1,33 +1,24 @@
 package api
 
-import (
-	"log"
-	"net/http"
-	"time"
-)
+import "net/http"
 
-type responseWriter struct {
-	http.ResponseWriter
-	statusCode int
-}
+/*
+logging middleware,
+jwt verification for an admin
+normal jwt verifier
+jwt verifier for normal browsing
 
-func (rw *responseWriter) WriteHeader(code int) {
-	rw.statusCode = code
-	rw.ResponseWriter.WriteHeader(code)
-}
-func RouteLogger(next http.Handler) http.Handler {
+
+
+
+*/
+
+//inventory management (simple)
+//better logging
+
+// Is a middleware to log http requests
+func ReqLoggingMW(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		start := time.Now()
-		log.Printf("→ %s %s from %s", r.Method, r.URL.Path, r.RemoteAddr)
-		wrapped := &responseWriter{ResponseWriter: w, statusCode: http.StatusOK}
 
-		next.ServeHTTP(wrapped, r)
-		duration := time.Since(start)
-		log.Printf("← %s %s [%d] completed in %v",
-			r.Method,
-			r.URL.Path,
-			wrapped.statusCode,
-			duration,
-		)
 	})
 }

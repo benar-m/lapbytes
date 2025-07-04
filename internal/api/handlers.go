@@ -7,6 +7,8 @@ import (
 	"lapbytes/internal/model"
 	"lapbytes/internal/store/queries"
 	"log"
+	"log/slog"
+	"net"
 	"net/http"
 	"strconv"
 	"time"
@@ -15,7 +17,8 @@ import (
 )
 
 type App struct {
-	DB *pgxpool.Pool
+	DB     *pgxpool.Pool
+	Logger *slog.Logger
 }
 
 /*- `GET /api/products` — List all laptops
@@ -40,45 +43,50 @@ type App struct {
 */
 // Core Rendering
 func (a *App) RenderHome(w http.ResponseWriter, r *http.Request) {
-	tmpl, err := template.ParseFiles("templates/index.gohtml")
+	tmpl, err := template.ParseFiles("templates/indexx.gohtml")
 	if err != nil {
-		log.Printf("Error Encountered while Parsing index template : %v", err)
-		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+		a.LogInternalServerError(r, "template parsing", "renderhome", err)
+		http.Error(w, "internal server error", http.StatusInternalServerError)
 		return
 	}
 	w.Header().Set("Content-Type", "text/html")
 	if err := tmpl.Execute(w, nil); err != nil {
-		log.Printf("Error Executing Index Templates")
+		a.LogTemplateError("renderhome", "index.gohtml", err)
+		http.Error(w, "internal server error", http.StatusInternalServerError)
+		return
 	}
-	//
+
 }
 
 func (a *App) RenderRegister(w http.ResponseWriter, r *http.Request) {
 	tmpl, err := template.ParseFiles("templates/signup.gohtml")
 	if err != nil {
-		log.Printf("Error while parsing templates: %v", err)
-		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+		a.LogInternalServerError(r, "template parsing", "renderregister", err)
+		http.Error(w, "internal server error", http.StatusInternalServerError)
 		return
+
 	}
 
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
 	err = tmpl.Execute(w, nil)
 	if err != nil {
-		log.Printf("Error While Executing Template %v", err)
+		a.LogTemplateError("renderregister", "signup.gohtml", err)
+		http.Error(w, "internal server error", http.StatusInternalServerError)
 		return
 	}
 }
 func (a *App) RenderLogin(w http.ResponseWriter, r *http.Request) {
 	tmpl, err := template.ParseFiles("templates/login.gohtml")
 	if err != nil {
-		log.Printf("Error Encountered while parsing login template : %v", err)
-		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+		a.LogInternalServerError(r, "template parsing", "renderlogin", err)
+		http.Error(w, "internal server error", http.StatusInternalServerError)
 		return
 	}
 	w.Header().Set("Content-Type", "text/html ; charset=utf-8")
 	err = tmpl.Execute(w, nil)
 	if err != nil {
-		log.Printf("Error Executing Login Template %v", err)
+		a.LogTemplateError("renderlogin", "login.html", err)
+		http.Error(w, "internal server error", http.StatusInternalServerError)
 		return
 	}
 }
@@ -86,26 +94,31 @@ func (a *App) RenderLogin(w http.ResponseWriter, r *http.Request) {
 func (a *App) RenderProducts(w http.ResponseWriter, r *http.Request) {
 	tmpl, err := template.ParseFiles("templates/index.gohtml")
 	if err != nil {
-		log.Printf("Error Encountered while Parsing index template : %v", err)
-		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+		a.LogInternalServerError(r, "template parsing", "renderproducts", err)
+		http.Error(w, "internal server error", http.StatusInternalServerError)
 		return
 	}
 	w.Header().Set("Content-Type", "text/html")
 	if err := tmpl.Execute(w, nil); err != nil {
-		log.Printf("Error Executing Index Templates")
+		a.LogTemplateError("renderproducts", "index.gohtml", err)
+		http.Error(w, "internal server error", http.StatusInternalServerError)
+
+		return
 	}
 }
 
 func (a *App) RenderProduct(w http.ResponseWriter, r *http.Request) {
 	tmpl, err := template.ParseFiles("templates/product-details.gohtml")
 	if err != nil {
-		log.Printf("Error while Parsing File %v", err)
-		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+		a.LogInternalServerError(r, "template parsing", "renderproduct", err)
+		http.Error(w, "internal server error", http.StatusInternalServerError)
 		return
 	}
 	w.Header().Set("Content-Type", "text/html")
 	if err := tmpl.Execute(w, nil); err != nil {
-		log.Printf("Error Executing Pd template: %v", err)
+		a.LogTemplateError("renderproduct", "product-details.gohtml", err)
+		http.Error(w, "internal server error", http.StatusInternalServerError)
+		return
 	}
 }
 
@@ -117,40 +130,79 @@ func (a *App) RenderProduct(w http.ResponseWriter, r *http.Request) {
 
 // called at /api/..., it logs in a user by verifying credentials and issuing jwts
 func (a *App) LoginUser(w http.ResponseWriter, r *http.Request) {
-	//Logging later
-	email := r.FormValue("email")
-	password := r.FormValue("password")
-	if email == "" || password == "" {
+	if r.Header.Get("Content-Type") != "application/json" {
+		a.LogBadRequest(r, "invalid content-type", "loginuser", fmt.Errorf("non json request"))
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusBadRequest)
 		json.NewEncoder(w).Encode(map[string]string{
-			"error": "All Fields are required",
+			"error": "bad request, accepts JSON only",
 		})
+		return
+
 	}
-	passwordhash, err := queries.GetUserHash(a.DB, email)
+	type loginRequest struct {
+		Email    string `json:"email"`
+		Password string `json:"password"`
+	}
+	var userRequest loginRequest
+	err := json.NewDecoder(r.Body).Decode(&userRequest)
 	if err != nil {
+		a.LogBadRequest(r, "possibly missing values", "loginuser", err)
 		w.Header().Set("Content-Type", "application/json")
-		w.WriteHeader(http.StatusUnauthorized)
+		w.WriteHeader(http.StatusBadRequest)
 		json.NewEncoder(w).Encode(map[string]string{
-			"error": "Invalid Credentials. Please Check again",
+			"error": "bad request, All fields are required",
 		})
 		return
 	}
 
-	loggedIn := verifyPasswordHash(password, passwordhash)
-	if !loggedIn {
+	passwordhash, err := queries.GetUserHash(a.DB, userRequest.Email)
+	if err != nil {
+		a.Logger.Error("invalid credentials",
+			"handler", "loginuser",
+			"path", r.URL.Path,
+			"method", r.Method,
+			"status", 401,
+			"error", fmt.Errorf("user does not exist"),
+		)
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusUnauthorized)
 		json.NewEncoder(w).Encode(map[string]string{
 			"error": "Invalid Credentials. Please Check again",
 		})
-		// http.Error(w, "Invalid Credentials", http.StatusUnauthorized)
+
+		return
+	}
+
+	loggedIn := verifyPasswordHash(userRequest.Password, passwordhash)
+	if !loggedIn {
+		host, _, err := net.SplitHostPort(r.RemoteAddr)
+		if err != nil {
+			a.Logger.Error("ip parsing err",
+				"remoteAddress", r.RemoteAddr,
+			)
+		}
+		a.Logger.Error("invalid credentials",
+			"handler", "loginuser",
+			"path", r.URL.Path,
+			"method", r.Method,
+			"status", 401,
+			"ip", host,
+			"error", fmt.Errorf("invalid password"),
+		)
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusUnauthorized)
+		json.NewEncoder(w).Encode(map[string]string{
+			"error": "Invalid Credentials. Please Check again",
+		})
+
 		return
 	}
 
 	InitKeys()
 	accessToken, err := IssueKeys()
 	if err != nil {
+		a.LogInternalServerError(r, "jwt token issuing error", "loginuser", err)
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusInternalServerError)
 		json.NewEncoder(w).Encode(map[string]string{
@@ -167,6 +219,7 @@ func (a *App) LoginUser(w http.ResponseWriter, r *http.Request) {
 	//Set cookies + A refresh token
 	refreshToken, err := generateRandomString()
 	if err != nil {
+		a.LogInternalServerError(r, "cookie issuance error", "loginuser", err)
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusInternalServerError)
 		json.NewEncoder(w).Encode(map[string]string{
@@ -179,7 +232,7 @@ func (a *App) LoginUser(w http.ResponseWriter, r *http.Request) {
 	http.SetCookie(w, &http.Cookie{
 		Name:     "refresh_token",
 		Value:    refreshToken,
-		Path:     "GET /",
+		Path:     "/",
 		SameSite: http.SameSiteStrictMode,
 		HttpOnly: true,
 		Secure:   true,
