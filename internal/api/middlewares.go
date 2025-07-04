@@ -1,24 +1,126 @@
 package api
 
-import "net/http"
+import (
+	"crypto/rsa"
+	"encoding/json"
+	"log"
+	"net/http"
+	"os"
+	"strings"
+	"time"
 
-/*
-logging middleware,
-jwt verification for an admin
-normal jwt verifier
-jwt verifier for normal browsing
+	"github.com/golang-jwt/jwt/v5"
+)
 
+type jwtClaims struct {
+	jwt.RegisteredClaims
+	Access_level int `json:"access_level,omitempty"`
+}
 
+// Public, potential error here
+var PublicKey *rsa.PublicKey
 
+func init() {
+	pkData, err := os.ReadFile("./public_key.pem")
+	if err != nil {
+		log.Fatal(err)
+	}
+	PublicKey, err = jwt.ParseRSAPublicKeyFromPEM(pkData)
+	if err != nil {
+		log.Fatal(err)
+	}
 
-*/
-
-//inventory management (simple)
-//better logging
+}
 
 // Is a middleware to log http requests
-func ReqLoggingMW(next http.Handler) http.Handler {
+func (a *App) ReqLoggingMW(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		start := time.Now()
+		next.ServeHTTP(w, r)
+		log.Printf("%s %s %v", r.Method, r.URL.Path, time.Since(start))
 
+	})
+}
+
+func (a *App) GeneralJwtVerifierMW(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		authorizationHeader := r.Header.Get("Authorization")
+		if authorizationHeader == "" {
+			w.Header().Set("Content-Type", "application/json")
+			w.WriteHeader(http.StatusUnauthorized)
+			json.NewEncoder(w).Encode(map[string]string{
+				"error": "missing authorization header",
+			})
+			return
+		}
+		splitToken := strings.Split(authorizationHeader, " ")
+		if len(splitToken) != 2 || strings.ToLower(splitToken[0]) != "bearer" {
+			w.Header().Set("Content-Type", "application/json")
+			w.WriteHeader(http.StatusUnauthorized)
+			json.NewEncoder(w).Encode(map[string]string{
+				"error": "invalid authorization header",
+			})
+			return
+		}
+		tokenString := splitToken[1]
+		claims := jwtClaims{}
+		token, err := jwt.ParseWithClaims(tokenString, &claims, func(t *jwt.Token) (interface{}, error) {
+			return PublicKey, nil
+		})
+		if err != nil || !token.Valid {
+			a.Logger.Error("jwt verfication error",
+				"time", time.Now(),
+				"ip", r.RemoteAddr,
+			)
+			w.Header().Set("Content-Type", "application/json")
+			w.WriteHeader(http.StatusUnauthorized)
+			json.NewEncoder(w).Encode(map[string]string{
+				"error": "not authorized",
+			})
+			return
+		}
+		next.ServeHTTP(w, r)
+	})
+}
+
+func (a *App) IsAdminJwtVerifierMW(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		authorizationHeader := r.Header.Get("Authorization")
+		if authorizationHeader == "" {
+			w.Header().Set("Content-Type", "application/json")
+			w.WriteHeader(http.StatusUnauthorized)
+			json.NewEncoder(w).Encode(map[string]string{
+				"error": "missing authorization header",
+			})
+			return
+		}
+		splitToken := strings.Split(authorizationHeader, " ")
+		if len(splitToken) != 2 || strings.ToLower(splitToken[0]) != "bearer" {
+			w.Header().Set("Content-Type", "application/json")
+			w.WriteHeader(http.StatusUnauthorized)
+			json.NewEncoder(w).Encode(map[string]string{
+				"error": "invalid authorization header",
+			})
+			return
+		}
+		tokenString := splitToken[1]
+		claims := jwtClaims{}
+		token, err := jwt.ParseWithClaims(tokenString, &claims, func(t *jwt.Token) (interface{}, error) {
+			return PublicKey, nil
+		})
+		if err != nil || !token.Valid || claims.Access_level > 1 {
+			a.Logger.Error("jwt verfication error",
+				"time", time.Now(),
+				"ip", r.RemoteAddr,
+			)
+			w.Header().Set("Content-Type", "application/json")
+			w.WriteHeader(http.StatusUnauthorized)
+			json.NewEncoder(w).Encode(map[string]string{
+				"error": "not authorized",
+			})
+			return
+		}
+
+		next.ServeHTTP(w, r)
 	})
 }
