@@ -21,29 +21,9 @@ type App struct {
 	Logger *slog.Logger
 }
 
-/*- `GET /api/products` — List all laptops
-- `GET /api/products/{id}` — Get product details
-- `GET /api/products/search?q=` — Search or filter products*/
-
-/*
-## Render Endpoints
-- `GET /` — Homepage
-- `GET /login` — Login page
-- `GET /register` — Registration page
-- `GET /products` — Product listing page
-- `GET /products/{id}` — Product details page
-- `GET /cart` — View cart
-- `GET /checkout` — Checkout page
-- `GET /orders` — User’s order history
-- `GET /admin` — Admin dashboard
-- `GET /admin/products` — Admin laptop listing
-- `GET /admin/orders` — Admin order view
-- `GET /admin/users` — Admin user management
-
-*/
-// Core Rendering
+// RenderHome serves the homepage template
 func (a *App) RenderHome(w http.ResponseWriter, r *http.Request) {
-	tmpl, err := template.ParseFiles("templates/indexx.gohtml")
+	tmpl, err := template.ParseFiles("templates/index.gohtml")
 	if err != nil {
 		a.LogInternalServerError(r, "template parsing", "renderhome", err)
 		http.Error(w, "internal server error", http.StatusInternalServerError)
@@ -58,6 +38,7 @@ func (a *App) RenderHome(w http.ResponseWriter, r *http.Request) {
 
 }
 
+// RenderRegister serves the user registration page
 func (a *App) RenderRegister(w http.ResponseWriter, r *http.Request) {
 	tmpl, err := template.ParseFiles("templates/signup.gohtml")
 	if err != nil {
@@ -75,6 +56,8 @@ func (a *App) RenderRegister(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 }
+
+// RenderLogin serves the user login page
 func (a *App) RenderLogin(w http.ResponseWriter, r *http.Request) {
 	tmpl, err := template.ParseFiles("templates/login.gohtml")
 	if err != nil {
@@ -91,6 +74,7 @@ func (a *App) RenderLogin(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+// RenderProducts serves the products listing page
 func (a *App) RenderProducts(w http.ResponseWriter, r *http.Request) {
 	tmpl, err := template.ParseFiles("templates/index.gohtml")
 	if err != nil {
@@ -107,6 +91,7 @@ func (a *App) RenderProducts(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+// RenderProduct serves the individual product details page
 func (a *App) RenderProduct(w http.ResponseWriter, r *http.Request) {
 	tmpl, err := template.ParseFiles("templates/product-details.gohtml")
 	if err != nil {
@@ -122,13 +107,7 @@ func (a *App) RenderProduct(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-// func ApiLogin(w http.ResponseWriter, r *http.Request) {
-// 	// username:=r.FormValue("username")
-// 	// password:=r.FormValue("password")
-// 	//Verify Login Then Issue KEys
-// }
-
-// called at /api/..., it logs in a user by verifying credentials and issuing jwts
+// LoginUser authenticates a user and issues JWT token
 func (a *App) LoginUser(w http.ResponseWriter, r *http.Request) {
 	if r.Header.Get("Content-Type") != "application/json" {
 		a.LogBadRequest(r, "invalid content-type", "loginuser", fmt.Errorf("non json request"))
@@ -246,24 +225,41 @@ func (a *App) LoginUser(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-// Called at /api/..., this function creates a new user in the database
+// RegisterUser creates a new user account
 func (a *App) RegisterUser(w http.ResponseWriter, r *http.Request) {
 	//later sanitize, middleware maybe
 	//refactor to more direct or keep it as defensive as it is
-	user := &model.User{}
-	username := r.FormValue("username")
-	email := r.FormValue("email")
-	password := r.FormValue("password")
-	if username == "" || email == "" || password == "" {
+	type regRequest struct {
+		Username string `json:"username"`
+		Email    string `json:"email"`
+		Password string `json:"password"`
+	}
+	if r.Header.Get("Content-Type") != "application/json" {
+		a.LogBadRequest(r, "invalid content-type", "registeruser", fmt.Errorf("invalid content-type"))
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusBadRequest)
 		json.NewEncoder(w).Encode(map[string]string{
-			"error": "All fields are required",
+			"error": "invalid data, please check again",
 		})
 		return
 	}
-	password_hash, err := hashPassword(password)
+	var userRequest regRequest
+	err := json.NewDecoder(r.Body).Decode(&userRequest)
 	if err != nil {
+		a.LogBadRequest(r, "probably missing values", "registeruser", err)
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(map[string]string{
+			"error": "invalid data, please check again",
+		})
+		return
+
+	}
+
+	user := &model.User{}
+	password_hash, err := hashPassword(userRequest.Password)
+	if err != nil {
+		a.LogInternalServerError(r, "password hashing error", "registeruser", err)
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusInternalServerError)
 		json.NewEncoder(w).Encode(map[string]string{
@@ -275,8 +271,8 @@ func (a *App) RegisterUser(w http.ResponseWriter, r *http.Request) {
 
 	current_time := time.Now()
 
-	user.Username = username
-	user.Email = email
+	user.Username = userRequest.Username
+	user.Email = userRequest.Email
 	user.Password_hash = password_hash
 	user.Is_admin = false
 	user.Access_level = 4
@@ -285,7 +281,7 @@ func (a *App) RegisterUser(w http.ResponseWriter, r *http.Request) {
 
 	userId, err := queries.InsertUser(a.DB, *user)
 	if err != nil {
-		log.Printf("Database Error: %v", err)
+		a.LogDatabaseError(r, "insert query error", "insertuser", err)
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusInternalServerError)
 		json.NewEncoder(w).Encode(map[string]string{
@@ -293,7 +289,10 @@ func (a *App) RegisterUser(w http.ResponseWriter, r *http.Request) {
 		})
 		return
 	}
-	log.Printf("created user: %v", userId)
+	a.Logger.Info("successful user creation",
+		"time", time.Now(),
+		"userid", userId,
+	)
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusCreated)
 	json.NewEncoder(w).Encode(map[string]interface{}{
@@ -303,19 +302,14 @@ func (a *App) RegisterUser(w http.ResponseWriter, r *http.Request) {
 
 }
 
-/*
-##  Products
-- `GET /api/products` — List all laptops
-- `GET /api/products/{id}` — Get product details
-- `GET /api/products/search?q=` — Search or filter products
-*/
-
+// ListProducts returns paginated list of all laptops
 func (a *App) ListProducts(w http.ResponseWriter, r *http.Request) {
 	//lojik to get the Products
 	limit := r.PathValue("limit")
 	page := r.PathValue("page")
 	lim, err := strconv.Atoi(limit)
 	if err != nil || lim < 1 {
+		a.LogBadRequest(r, "invalid limit", "listproducts", err)
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusBadRequest)
 		json.NewEncoder(w).Encode(map[string]string{
@@ -325,6 +319,7 @@ func (a *App) ListProducts(w http.ResponseWriter, r *http.Request) {
 	}
 	pag, err := strconv.Atoi(page)
 	if err != nil || pag < 1 {
+		a.LogBadRequest(r, "invalid page", "listproducts", err)
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusBadRequest)
 		json.NewEncoder(w).Encode(map[string]string{
@@ -336,6 +331,7 @@ func (a *App) ListProducts(w http.ResponseWriter, r *http.Request) {
 
 	products, err := queries.QueryLaptops(a.DB, lim, offset)
 	if err != nil {
+		a.LogDatabaseError(r, "query laptops error", "querylaptops", err)
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusInternalServerError)
 		json.NewEncoder(w).Encode(map[string]string{
@@ -344,50 +340,77 @@ func (a *App) ListProducts(w http.ResponseWriter, r *http.Request) {
 		return
 
 	}
+	a.Logger.Info("successful products query",
+		"time", time.Now(),
+	)
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(map[string]interface{}{
 		"products": products,
+		"message":  "request successful",
 	})
 
 }
 
+// ListProduct returns details of a single laptop by ID
 func (a *App) ListProduct(w http.ResponseWriter, r *http.Request) {
 	productId := r.PathValue("id")
 	id, err := strconv.Atoi(productId)
 	if err != nil || id < 1 {
-		http.Error(w, "Invalid Request", http.StatusBadRequest)
+		a.LogBadRequest(r, "invalid product request id", "listproduct", err)
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(map[string]string{
+			"error": "item not found",
+		})
 		return
 	}
 	product, err := queries.QueryLaptop(a.DB, id)
 	if err != nil {
 		if err.Error() == "no rows in result set" {
-			http.Error(w, "Item Not Found", http.StatusNotFound)
+			a.Logger.Error("item not found",
+				"status", 404,
+				"id", id,
+			)
+			w.Header().Set("Content-Type", "application/json")
+			w.WriteHeader(http.StatusNotFound)
+			json.NewEncoder(w).Encode(map[string]string{
+				"error": "item not found",
+			})
 			return
 		}
-		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
-		fmt.Printf("Error occured: %+v", err)
+		a.LogDatabaseError(r, "product query error", "querylaptop", err)
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusInternalServerError)
+		json.NewEncoder(w).Encode(map[string]string{
+			"error": "internal server error",
+		})
+
 		return
 	}
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
 	err = json.NewEncoder(w).Encode(product) //Maybe encode to memory first later to avoid sending malformed json
 	if err != nil {
-		//log better
+		a.Logger.Error("encoding error",
+			"handler", "querylaptop",
+			"error", err,
+		)
 		return
 
 	}
-	fmt.Println("Data Sent Succesfully")
+	a.Logger.Info("product query was successul",
+		"time", time.Now(),
+	)
 
 }
 
-//Admin endpoints
-
-// Handle user not found well later
+// DeleteUser removes a user from the database (admin only)
 func (a *App) DeleteUser(w http.ResponseWriter, r *http.Request) {
 	user_id := r.PathValue("id")
 	id, err := strconv.Atoi(user_id)
 	if err != nil || id < 1 {
+		a.LogBadRequest(r, "invalid user id", "deleteuser", err)
 		w.WriteHeader(http.StatusBadRequest)
 		w.Header().Set("Content-Type", "application/json")
 		json.NewEncoder(w).Encode(map[string]string{
@@ -397,6 +420,7 @@ func (a *App) DeleteUser(w http.ResponseWriter, r *http.Request) {
 	}
 	err = queries.DeleteUser(a.DB, id)
 	if err != nil {
+		a.LogDatabaseError(r, "delete user query error", "deleteuser", err)
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusInternalServerError)
 		json.NewEncoder(w).Encode(map[string]string{
@@ -405,20 +429,26 @@ func (a *App) DeleteUser(w http.ResponseWriter, r *http.Request) {
 		return
 
 	}
+	a.Logger.Info("successful user deletion",
+		"id", id,
+		"time", time.Now(),
+	)
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(map[string]interface{}{
-		"message": "user succesfully deleted",
+		"message": "user successfully deleted",
 		"userid":  id,
 	})
 }
 
+// ListUsers returns paginated list of all users (admin only)
 func (a *App) ListUsers(w http.ResponseWriter, r *http.Request) {
 	limit := r.PathValue("limit")
 	page := r.PathValue("page")
 
 	lim, err := strconv.Atoi(limit)
 	if err != nil || lim < 1 {
+		a.LogBadRequest(r, "invalid limit", "listusers", err)
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusBadRequest)
 		json.NewEncoder(w).Encode(map[string]string{
@@ -428,7 +458,7 @@ func (a *App) ListUsers(w http.ResponseWriter, r *http.Request) {
 	}
 	pag, err := strconv.Atoi(page)
 	if err != nil || pag < 1 {
-
+		a.LogBadRequest(r, "invalid page", "listusers", err)
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusBadRequest)
 		json.NewEncoder(w).Encode(map[string]string{
@@ -440,6 +470,7 @@ func (a *App) ListUsers(w http.ResponseWriter, r *http.Request) {
 
 	users, err := queries.GetAllUsers(a.DB, lim, offset)
 	if err != nil {
+		a.LogDatabaseError(r, "get all users query error", "listusers", err)
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusInternalServerError)
 		json.NewEncoder(w).Encode(map[string]string{
@@ -447,6 +478,9 @@ func (a *App) ListUsers(w http.ResponseWriter, r *http.Request) {
 		})
 		return
 	}
+	a.Logger.Info("successful users listing",
+		"time", time.Now(),
+	)
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(map[string]interface{}{
@@ -456,10 +490,12 @@ func (a *App) ListUsers(w http.ResponseWriter, r *http.Request) {
 
 }
 
+// ListSingleUser returns details of a specific user by ID (admin only)
 func (a *App) ListSingleUser(w http.ResponseWriter, r *http.Request) {
 	user_id := r.PathValue("id")
 	id, err := strconv.Atoi(user_id)
 	if err != nil || id < 1 {
+		a.LogBadRequest(r, "invalid user id", "listsingleuser", err)
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusBadRequest)
 		json.NewEncoder(w).Encode(map[string]string{
@@ -470,6 +506,7 @@ func (a *App) ListSingleUser(w http.ResponseWriter, r *http.Request) {
 	user, err := queries.GetUser(a.DB, id)
 	if err != nil {
 		if err.Error() == fmt.Sprintf("user with id %d not found", id) {
+			a.LogDatabaseError(r, "user not found", "listsingleuser", err)
 			w.Header().Set("Content-Type", "application/json")
 			w.WriteHeader(http.StatusBadRequest)
 			json.NewEncoder(w).Encode(map[string]string{
@@ -479,6 +516,7 @@ func (a *App) ListSingleUser(w http.ResponseWriter, r *http.Request) {
 
 		}
 
+		a.LogDatabaseError(r, "get user query error", "listsingleuser", err)
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusInternalServerError)
 		json.NewEncoder(w).Encode(map[string]string{
@@ -486,6 +524,9 @@ func (a *App) ListSingleUser(w http.ResponseWriter, r *http.Request) {
 		})
 		return
 	}
+	a.Logger.Info("successful user listing",
+		"time", time.Now(),
+	)
 	w.WriteHeader(http.StatusOK)
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(map[string]interface{}{
@@ -495,9 +536,11 @@ func (a *App) ListSingleUser(w http.ResponseWriter, r *http.Request) {
 
 }
 
+// AddNewProduct creates a new laptop in the database (admin only)
 func (a *App) AddNewProduct(w http.ResponseWriter, r *http.Request) {
 
 	if r.Header.Get("Content-Type") != "application/json" {
+		a.LogBadRequest(r, "invalid content-type", "addnewproduct", fmt.Errorf("non json request"))
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusBadRequest)
 		json.NewEncoder(w).Encode(map[string]string{
@@ -509,6 +552,7 @@ func (a *App) AddNewProduct(w http.ResponseWriter, r *http.Request) {
 	var product model.Laptop
 	err := json.NewDecoder(r.Body).Decode(&product)
 	if err != nil {
+		a.LogBadRequest(r, "invalid json", "addnewproduct", err)
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusBadRequest)
 		json.NewEncoder(w).Encode(map[string]string{
@@ -518,27 +562,33 @@ func (a *App) AddNewProduct(w http.ResponseWriter, r *http.Request) {
 	}
 	productId, err := queries.InsertLaptop(a.DB, product)
 	if err != nil {
+		a.LogDatabaseError(r, "insert laptop query error", "insertlaptop", err)
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusInternalServerError)
 		json.NewEncoder(w).Encode(map[string]string{
 			"error": "could not add laptop",
 		})
-		log.Println(err)
 		return
 	}
+	a.Logger.Info("laptop successfully added",
+		"time", time.Now(),
+		"id", productId,
+	)
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusCreated)
 	json.NewEncoder(w).Encode(map[string]interface{}{
-		"message": "product added successfuly",
+		"message": "product added successfully",
 		"id":      productId,
 	})
 
 }
 
+// DeleteProduct removes a laptop from the database (admin only)
 func (a *App) DeleteProduct(w http.ResponseWriter, r *http.Request) {
 	id := r.PathValue("id")
 	productId, err := strconv.Atoi(id)
 	if err != nil || productId < 1 {
+		a.LogBadRequest(r, "invalid id", "deleteproduct", err)
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusBadRequest)
 		json.NewEncoder(w).Encode(map[string]string{
@@ -548,6 +598,7 @@ func (a *App) DeleteProduct(w http.ResponseWriter, r *http.Request) {
 	}
 	err = queries.DeleteLaptop(a.DB, productId)
 	if err != nil {
+		a.LogDatabaseError(r, "delete laptop query error", "deleteproduct", err)
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusInternalServerError)
 		json.NewEncoder(w).Encode(map[string]string{
@@ -555,6 +606,10 @@ func (a *App) DeleteProduct(w http.ResponseWriter, r *http.Request) {
 		})
 		return
 	}
+	a.Logger.Info("product successfully deleted",
+		"time", time.Now(),
+		"id", productId,
+	)
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(map[string]interface{}{
