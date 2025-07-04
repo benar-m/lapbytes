@@ -11,15 +11,7 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
-/*
-## Admin (Protected)
-- `POST /api/admin/products` — Add new laptop
-- `DELETE /api/admin/products/{id}` — Delete laptop
-- `GET /api/admin/orders` — View all orders
-- `GET /api/admin/users` — View all registered users
-- `GET /api/admin/users/{id}` — View specific user details
-*/
-
+// InsertLaptop adds a new laptop to the products table
 func InsertLaptop(pool *pgxpool.Pool, lp model.Laptop) (product_id int, err error) {
 
 	stmt := `
@@ -63,6 +55,7 @@ func InsertLaptop(pool *pgxpool.Pool, lp model.Laptop) (product_id int, err erro
 
 }
 
+// DeleteLaptop removes a laptop from the products table by ID
 func DeleteLaptop(pool *pgxpool.Pool, id int) error {
 
 	stmt := `
@@ -78,6 +71,7 @@ func DeleteLaptop(pool *pgxpool.Pool, id int) error {
 	return nil
 }
 
+// GetAllUsers retrieves paginated list of users
 func GetAllUsers(pool *pgxpool.Pool, limit, offset int) (users []model.User, err error) {
 	stmt := `
 	SELECT username,email,createdat,accesslevel
@@ -112,6 +106,7 @@ func GetAllUsers(pool *pgxpool.Pool, limit, offset int) (users []model.User, err
 
 }
 
+// DeleteUser removes a user from the users by ID
 func DeleteUser(pool *pgxpool.Pool, id int) error {
 	stmt := `
 		DELETE
@@ -129,6 +124,7 @@ func DeleteUser(pool *pgxpool.Pool, id int) error {
 
 }
 
+// GetUser retrieves a single user by ID from the users
 func GetUser(pool *pgxpool.Pool, id int) (user model.User, err error) {
 
 	stmt := `
@@ -150,5 +146,5 @@ func GetUser(pool *pgxpool.Pool, id int) (user model.User, err error) {
 		return model.User{}, err
 	}
 
-	return user, nil //watch out
+	return user, nil
 }
