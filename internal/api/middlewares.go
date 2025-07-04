@@ -17,6 +17,9 @@ type jwtClaims struct {
 	jwt.RegisteredClaims
 	Access_level int `json:"access_level,omitempty"`
 }
+type contextKey string
+
+const jwtClaimsKey contextKey = "jwt_claims"
 
 // Public, potential error here
 var PublicKey *rsa.PublicKey
@@ -81,7 +84,7 @@ func (a *App) GeneralJwtVerifierMW(next http.Handler) http.Handler {
 			})
 			return
 		}
-		ctx := context.WithValue(r.Context(), "jwt_claims", &claims)
+		ctx := context.WithValue(r.Context(), jwtClaimsKey, &claims)
 		next.ServeHTTP(w, r.WithContext(ctx))
 	})
 }
