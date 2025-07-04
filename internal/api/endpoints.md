@@ -1,19 +1,19 @@
 # LapBytes API Endpoints
-
+<!-- 
 ##  Authentication
 - `POST /api/auth/register` — Register a new user  
 - `POST /api/auth/login` — Log in and get JWT  
 - `GET /api/auth/profile` — Get current user info  
 - `POST /api/auth/logout` — (Optional) Invalidate session
 
----
+--- -->
 
-##  Products
+<!-- ##  Products
 - `GET /api/products` — List all laptops  
 - `GET /api/products/{id}` — Get product details  
 - `GET /api/products/search?q=` — Search or filter products
 
----
+--- -->
 
 ##  Cart
 - `GET /api/cart` — View cart items  
@@ -39,7 +39,7 @@
 - `GET /api/admin/users/{id}` — View specific user details
 
 ---
-## Render Endpoints 
+<!-- ## Render Endpoints 
 - `GET /` — Homepage  
 - `GET /login` — Login page  
 - `GET /register` — Registration page  
@@ -51,4 +51,4 @@
 - `GET /admin` — Admin dashboard  
 - `GET /admin/products` — Admin laptop listing  
 - `GET /admin/orders` — Admin order view  
-- `GET /admin/users` — Admin user management  
+- `GET /admin/users` — Admin user management   -->

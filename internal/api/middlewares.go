@@ -1,6 +1,7 @@
 package api
 
 import (
+	"context"
 	"crypto/rsa"
 	"encoding/json"
 	"log"
@@ -32,7 +33,7 @@ func init() {
 
 }
 
-// Is a middleware to log http requests
+// ReqLoggingMW logs HTTP requests with method, path, and duration
 func (a *App) ReqLoggingMW(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		start := time.Now()
@@ -42,6 +43,7 @@ func (a *App) ReqLoggingMW(next http.Handler) http.Handler {
 	})
 }
 
+// GeneralJwtVerifierMW verifies JWT tokens and extracts claims for authenticated requests
 func (a *App) GeneralJwtVerifierMW(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		authorizationHeader := r.Header.Get("Authorization")
@@ -79,46 +81,29 @@ func (a *App) GeneralJwtVerifierMW(next http.Handler) http.Handler {
 			})
 			return
 		}
-		next.ServeHTTP(w, r)
+		ctx := context.WithValue(r.Context(), "jwt_claims", &claims)
+		next.ServeHTTP(w, r.WithContext(ctx))
 	})
 }
 
+// IsAdminJwtVerifierMW ensures the authenticated user has admin privileges
 func (a *App) IsAdminJwtVerifierMW(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		authorizationHeader := r.Header.Get("Authorization")
-		if authorizationHeader == "" {
-			w.Header().Set("Content-Type", "application/json")
-			w.WriteHeader(http.StatusUnauthorized)
-			json.NewEncoder(w).Encode(map[string]string{
-				"error": "missing authorization header",
-			})
-			return
-		}
-		splitToken := strings.Split(authorizationHeader, " ")
-		if len(splitToken) != 2 || strings.ToLower(splitToken[0]) != "bearer" {
-			w.Header().Set("Content-Type", "application/json")
-			w.WriteHeader(http.StatusUnauthorized)
-			json.NewEncoder(w).Encode(map[string]string{
-				"error": "invalid authorization header",
-			})
-			return
-		}
-		tokenString := splitToken[1]
-		claims := jwtClaims{}
-		token, err := jwt.ParseWithClaims(tokenString, &claims, func(t *jwt.Token) (interface{}, error) {
-			return PublicKey, nil
-		})
-		if err != nil || !token.Valid || claims.Access_level > 1 {
-			a.Logger.Error("jwt verfication error",
+		v := r.Context().Value("jwt_claims")
+		c, ok := v.(*jwtClaims)
+
+		if !ok || c == nil || c.Access_level > 1 {
+			a.Logger.Error("admin access denied",
 				"time", time.Now(),
 				"ip", r.RemoteAddr,
 			)
 			w.Header().Set("Content-Type", "application/json")
-			w.WriteHeader(http.StatusUnauthorized)
+			w.WriteHeader(http.StatusForbidden)
 			json.NewEncoder(w).Encode(map[string]string{
-				"error": "not authorized",
+				"error": "admin access required",
 			})
 			return
+
 		}
 
 		next.ServeHTTP(w, r)

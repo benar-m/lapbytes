@@ -60,3 +60,11 @@ func (a *App) LogBadRequest(r *http.Request, msg string, handler string, err err
 		"error", err,
 	)
 }
+
+func (a *App) LogDatabaseError(r *http.Request, msg string, query string, err error) {
+	a.Logger.Error("database error",
+		"sourceQuery", query,
+		"error", err,
+		"path", r.URL.Path,
+	)
+}
