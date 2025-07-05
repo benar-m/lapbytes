@@ -23,32 +23,33 @@ type App struct {
 
 // RenderHome serves the homepage template
 func (a *App) RenderHome(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "text/html; charset=utf-8")
+
 	tmpl, err := template.ParseFiles("templates/index.gohtml")
 	if err != nil {
 		a.LogInternalServerError(r, "template parsing", "renderhome", err)
 		http.Error(w, "internal server error", http.StatusInternalServerError)
 		return
 	}
-	w.Header().Set("Content-Type", "text/html")
+
 	if err := tmpl.Execute(w, nil); err != nil {
 		a.LogTemplateError("renderhome", "index.gohtml", err)
 		http.Error(w, "internal server error", http.StatusInternalServerError)
 		return
 	}
-
 }
 
 // RenderRegister serves the user registration page
 func (a *App) RenderRegister(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "text/html; charset=utf-8")
+
 	tmpl, err := template.ParseFiles("templates/signup.gohtml")
 	if err != nil {
 		a.LogInternalServerError(r, "template parsing", "renderregister", err)
 		http.Error(w, "internal server error", http.StatusInternalServerError)
 		return
-
 	}
 
-	w.Header().Set("Content-Type", "text/html; charset=utf-8")
 	err = tmpl.Execute(w, nil)
 	if err != nil {
 		a.LogTemplateError("renderregister", "signup.gohtml", err)
@@ -59,13 +60,15 @@ func (a *App) RenderRegister(w http.ResponseWriter, r *http.Request) {
 
 // RenderLogin serves the user login page
 func (a *App) RenderLogin(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "text/html; charset=utf-8")
+
 	tmpl, err := template.ParseFiles("templates/login.gohtml")
 	if err != nil {
 		a.LogInternalServerError(r, "template parsing", "renderlogin", err)
 		http.Error(w, "internal server error", http.StatusInternalServerError)
 		return
 	}
-	w.Header().Set("Content-Type", "text/html ; charset=utf-8")
+
 	err = tmpl.Execute(w, nil)
 	if err != nil {
 		a.LogTemplateError("renderlogin", "login.html", err)
@@ -76,30 +79,33 @@ func (a *App) RenderLogin(w http.ResponseWriter, r *http.Request) {
 
 // RenderProducts serves the products listing page
 func (a *App) RenderProducts(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "text/html; charset=utf-8")
+
 	tmpl, err := template.ParseFiles("templates/index.gohtml")
 	if err != nil {
 		a.LogInternalServerError(r, "template parsing", "renderproducts", err)
 		http.Error(w, "internal server error", http.StatusInternalServerError)
 		return
 	}
-	w.Header().Set("Content-Type", "text/html")
+
 	if err := tmpl.Execute(w, nil); err != nil {
 		a.LogTemplateError("renderproducts", "index.gohtml", err)
 		http.Error(w, "internal server error", http.StatusInternalServerError)
-
 		return
 	}
 }
 
 // RenderProduct serves the individual product details page
 func (a *App) RenderProduct(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "text/html; charset=utf-8")
+
 	tmpl, err := template.ParseFiles("templates/product-details.gohtml")
 	if err != nil {
 		a.LogInternalServerError(r, "template parsing", "renderproduct", err)
 		http.Error(w, "internal server error", http.StatusInternalServerError)
 		return
 	}
-	w.Header().Set("Content-Type", "text/html")
+
 	if err := tmpl.Execute(w, nil); err != nil {
 		a.LogTemplateError("renderproduct", "product-details.gohtml", err)
 		http.Error(w, "internal server error", http.StatusInternalServerError)
