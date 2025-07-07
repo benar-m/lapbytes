@@ -1,3 +1,5 @@
 
 *.env
 *.pem
+coverage.out
+internal/api/coverage.html

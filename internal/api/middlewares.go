@@ -92,7 +92,7 @@ func (a *App) GeneralJwtVerifierMW(next http.Handler) http.Handler {
 // IsAdminJwtVerifierMW ensures the authenticated user has admin privileges
 func (a *App) IsAdminJwtVerifierMW(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		v := r.Context().Value("jwt_claims")
+		v := r.Context().Value(jwtClaimsKey)
 		c, ok := v.(*jwtClaims)
 
 		if !ok || c == nil || c.Access_level > 1 {
